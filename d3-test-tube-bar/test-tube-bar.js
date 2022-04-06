@@ -1,5 +1,15 @@
 const renderBar = (data) => {
-  const svg = d3.select("svg#test-tube-bar");
+  const {
+    select,
+    scaleLinear,
+    scaleBand,
+    scaleOrdinal,
+    arc,
+    interpolate,
+    format,
+  } = d3;
+
+  const svg = select("svg#test-tube-bar");
   const width = +svg.attr("width");
   const height = +svg.attr("height");
   const margin = { top: 40, right: 40, bottom: 80, left: 100 };
@@ -10,27 +20,20 @@ const renderBar = (data) => {
   const yValue = (d) => d.val;
 
   // scales
-  const yScale = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+  const yScale = scaleLinear().domain([0, 1]).range([innerHeight, 0]);
 
-  const xScale = d3
-    .scaleBand()
+  const xScale = scaleBand()
     .domain(data.map(xValue))
     .range([0, innerWidth])
     .padding(0.4);
 
-  const cScale = d3
-    .scaleOrdinal()
+  const cScale = scaleOrdinal()
     .domain(data.map(xValue))
     .range(["#e2733d", "#337f88", "#de4c68"]);
-
-  // axes
-  // const yAxis = d3.axisLeft(yScale);
 
   const g = svg
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-  // g.append("g").call(yAxis);
 
   tubeBarsG = g
     .selectAll("rect.data")
@@ -39,8 +42,7 @@ const renderBar = (data) => {
     .append("g")
     .classed("tube-bar", true);
 
-  const arc = d3
-    .arc()
+  const arcGen = arc()
     .innerRadius(0)
     .outerRadius(0.5 * xScale.bandwidth())
     .startAngle(Math.PI / 2)
@@ -64,7 +66,7 @@ const renderBar = (data) => {
   // tube base
   tubeBarsG
     .append("path")
-    .attr("d", arc)
+    .attr("d", arcGen)
     .attr("fill", (d) => cScale(xValue(d)))
     .attr(
       "transform",
@@ -96,8 +98,8 @@ const renderBar = (data) => {
     .transition()
     .duration(1500)
     .textTween(function (d) {
-      const i = d3.interpolate(0, yValue(d));
-      return (t) => d3.format(".1%")(i(t));
+      const i = interpolate(0, yValue(d));
+      return (t) => format(".1%")(i(t));
     });
 };
 
